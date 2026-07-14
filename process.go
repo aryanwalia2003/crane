@@ -18,6 +18,7 @@ type processOpts struct {
 	model      string
 	ytdlpBin   string
 	ffmpegBin  string
+	maxHeight  int
 }
 
 func runProcess(opts processOpts) error {
@@ -30,7 +31,7 @@ func runProcess(opts processOpts) error {
 	}
 	defer os.RemoveAll(tmp)
 
-	video, err := resolveVideo(opts.ytdlpBin, opts.input, tmp)
+	video, err := resolveVideo(opts.ytdlpBin, opts.input, tmp, opts.maxHeight)
 	if err != nil {
 		return fmt.Errorf("resolve video: %w", err)
 	}

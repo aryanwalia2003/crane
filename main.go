@@ -45,6 +45,7 @@ func cmdProcess(args []string) error {
 	model := fs.String("model", "", "path to ggml distil-whisper model (or set CRANE_MODEL)")
 	ytdlpBin := fs.String("yt-dlp-bin", "yt-dlp", "yt-dlp binary")
 	ffmpegBin := fs.String("ffmpeg-bin", "ffmpeg", "ffmpeg binary")
+	maxHeight := fs.Int("max-height", 720, "max video height to download (URL input only)")
 	fs.Parse(args)
 	if fs.NArg() < 1 {
 		return fmt.Errorf("usage: crane process [flags] <url-or-file>")
@@ -67,6 +68,7 @@ func cmdProcess(args []string) error {
 		model:      *model,
 		ytdlpBin:   *ytdlpBin,
 		ffmpegBin:  *ffmpegBin,
+		maxHeight:  *maxHeight,
 	})
 }
 
