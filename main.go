@@ -17,6 +17,8 @@ func main() {
 		err = cmdProcess(os.Args[2:])
 	case "extract":
 		err = cmdExtract(os.Args[2:])
+	case "pdf":
+		err = cmdPDF(os.Args[2:])
 	default:
 		usage()
 		os.Exit(1)
@@ -28,7 +30,7 @@ func main() {
 }
 
 func usage() {
-	fmt.Fprintln(os.Stderr, "usage: crane <process|extract> [flags]")
+	fmt.Fprintln(os.Stderr, "usage: crane <process|extract|pdf> [flags]")
 }
 
 func cmdProcess(args []string) error {
@@ -40,7 +42,7 @@ func cmdProcess(args []string) error {
 	tileWidth := fs.Int("tile-width", 320, "frame tile width in pixels")
 	speed := fs.Float64("speed", 2, "audio speedup factor before transcription")
 	whisperBin := fs.String("whisper-bin", "whisper-cli", "whisper.cpp binary")
-	model := fs.String("model", "", "path to ggml distil-whisper model (required)")
+	model := fs.String("model", "", "path to ggml distil-whisper model (or set CRANE_MODEL)")
 	ytdlpBin := fs.String("yt-dlp-bin", "yt-dlp", "yt-dlp binary")
 	ffmpegBin := fs.String("ffmpeg-bin", "ffmpeg", "ffmpeg binary")
 	fs.Parse(args)
@@ -48,7 +50,10 @@ func cmdProcess(args []string) error {
 		return fmt.Errorf("usage: crane process [flags] <url-or-file>")
 	}
 	if *model == "" {
-		return fmt.Errorf("-model is required")
+		*model = os.Getenv("CRANE_MODEL")
+	}
+	if *model == "" {
+		return fmt.Errorf("-model is required (or set CRANE_MODEL)")
 	}
 	return runProcess(processOpts{
 		input:      fs.Arg(0),
@@ -78,4 +83,18 @@ func cmdExtract(args []string) error {
 		return fmt.Errorf("-out is required")
 	}
 	return extractFrame(*manifestPath, *index, *out)
+}
+
+func cmdPDF(args []string) error {
+	fs := flag.NewFlagSet("pdf", flag.ExitOnError)
+	in := fs.String("in", "", "path to markdown file (required)")
+	out := fs.String("out", "", "output pdf path (required)")
+	fs.Parse(args)
+	if *in == "" {
+		return fmt.Errorf("-in is required")
+	}
+	if *out == "" {
+		return fmt.Errorf("-out is required")
+	}
+	return convertPDF(*in, *out)
 }
